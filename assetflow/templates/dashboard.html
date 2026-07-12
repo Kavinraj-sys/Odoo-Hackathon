@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Dashboard - {{ user_role }}</h1>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3>Available Assets</h3>
+        <h2>{{ stats.available }}</h2>
+    </div>
+    <div class="stat-card">
+        <h3>Allocated</h3>
+        <h2>{{ stats.allocated }}</h2>
+    </div>
+    <div class="stat-card">
+        <h3>Under Maintenance</h3>
+        <h2>{{ stats.maintenance }}</h2>
+    </div>
+</div>
+
+<h2>Recent Activity</h2>
+<table>
+    <thead>
+        <tr><th>Asset</th><th>Status</th><th>Location</th></tr>
+    </thead>
+    <tbody>
+        {% for asset in recent_assets %}
+        <tr>
+            <td>{{ asset.name }} ({{ asset.tag }})</td>
+            <td><span class="status {{ asset.status.lower().replace(' ', '-') }}">{{ asset.status }}</span></td>
+            <td>{{ asset.location or 'N/A' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<canvas id="utilChart" style="max-height: 320px; margin-top: 30px;"></canvas>
+{% endblock %}

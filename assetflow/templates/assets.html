@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Assets</h1>
+
+{% if user_role in ['Admin', 'AssetManager'] %}
+<form method="POST" action="{{ url_for('create_asset') }}" class="form-inline">
+    <input type="text" name="name" placeholder="Asset Name" required>
+    <input type="text" name="category" placeholder="Category" required>
+    <input type="text" name="location" placeholder="Location">
+    <button type="submit">+ Register Asset</button>
+</form>
+{% endif %}
+
+<table class="asset-table">
+    <thead>
+        <tr>
+            <th>Tag</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Location</th>
+            {% if user_role in ['Admin', 'AssetManager'] %}<th>Actions</th>{% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for asset in assets %}
+        <tr>
+            <td>{{ asset.tag }}</td>
+            <td>{{ asset.name }}</td>
+            <td>{{ asset.category }}</td>
+            <td><span class="status {{ asset.status.lower().replace(' ', '-') }}">{{ asset.status }}</span></td>
+            <td>{{ asset.location or 'N/A' }}</td>
+            {% if user_role in ['Admin', 'AssetManager'] %}
+            <td>
+                <form method="POST" action="{{ url_for('update_asset', id=asset.id) }}" style="display:inline;">
+                    <select name="status">
+                        <option value="Available">Available</option>
+                        <option value="Allocated">Allocated</option>
+                        <option value="Under Maintenance">Under Maintenance</option>
+                    </select>
+                    <button type="submit">Update</button>
+                </form>
+                {% if user_role == 'Admin' %}
+                <form method="POST" action="{{ url_for('delete_asset', id=asset.id) }}" style="display:inline;" onsubmit="return confirm('Delete?');">
+                    <button type="submit" class="delete-btn">Delete</button>
+                </form>
+                {% endif %}
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

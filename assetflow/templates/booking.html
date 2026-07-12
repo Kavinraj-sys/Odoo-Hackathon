@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Resource Booking</h1>
+
+<div class="card">
+    <h3>Book a Shared Resource</h3>
+    <form method="POST" action="#">
+        <input type="text" placeholder="Resource Name (e.g. Conference Room B2)" required>
+        <input type="datetime-local" placeholder="Start Time">
+        <input type="datetime-local" placeholder="End Time">
+        <button type="submit">Book Resource</button>
+    </form>
+</div>
+
+<h2>Current Bookings</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Resource</th>
+            <th>Booked By</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Add dynamic data via backend later -->
+        <tr>
+            <td>Conference Room B2</td>
+            <td>John Doe</td>
+            <td>2026-07-12 09:00</td>
+            <td>2026-07-12 10:00</td>
+            <td><span class="status available">Upcoming</span></td>
+        </tr>
+    </tbody>
+</table>
+{% endblock %}

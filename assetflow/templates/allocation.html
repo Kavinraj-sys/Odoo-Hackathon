@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Asset Allocation & Transfer</h1>
+<p>Double allocation is prevented in backend logic.</p>
+<table>
+    <thead><tr><th>Asset</th><th>Current Holder</th><th>Action</th></tr></thead>
+    <tbody>
+        {% for asset in assets %}
+        <tr>
+            <td>{{ asset.name }} ({{ asset.tag }})</td>
+            <td>{{ asset.allocated_to or 'Available' }}</td>
+            <td><button>Allocate / Request Transfer</button></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

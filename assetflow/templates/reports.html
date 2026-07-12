@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Reports & Analytics</h1>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3>Asset Utilization</h3>
+        <canvas id="utilChart" height="180"></canvas>
+    </div>
+    <div class="stat-card">
+        <h3>Maintenance Frequency</h3>
+        <canvas id="maintChart" height="180"></canvas>
+    </div>
+</div>
+
+<h2>Key Insights</h2>
+<ul>
+    <li>Most used assets: Dell Laptops</li>
+    <li>Idle assets: Office Chairs (45 days)</li>
+    <li>Assets due for maintenance: 3</li>
+</ul>
+
+<button class="btn-primary">Export Full Report (CSV/PDF)</button>
+{% endblock %}
