@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AssetFlow - Enterprise Asset Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        :root {
+            --primary: 59 130 246;
+        }
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        .logo-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .nav-link {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-link:hover {
+            transform: translateY(-1px);
+        }
+        .card-hover {
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div id="sidebar" class="w-72 bg-white border-r border-gray-200 flex flex-col">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center gap-x-3">
+                    <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-xl logo-font">AF</div>
+                    <div>
+                        <span class="text-2xl font-semibold tracking-tight logo-font text-gray-900">AssetFlow</span>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Enterprise Asset Management</p>
+            </div>
+            
+            <!-- User Info -->
+            <div class="p-4 border-b border-gray-100 flex items-center gap-x-3">
+                <div id="user-avatar" class="w-9 h-9 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-medium">JD</div>
+                <div>
+                    <div id="user-name" class="font-medium text-sm">John Doe</div>
+                    <div id="user-role" class="text-xs text-gray-500">Employee</div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
+                <a onclick="navigateTo('dashboard')" class="nav-link flex items-center gap-x-3 px-4 py-3 text-sm font-medium rounded-2xl hover:bg-blue-50 text-blue-600 bg-blue-50 cursor-pointer" id="nav-dashboard">
+                    <i class="fas fa-tachometer-alt w-5"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a onclick="navigateTo('assets')" class="nav-link flex items-center gap-x-3 px-4 py-3 text-sm font-medium rounded-2xl hover:bg-gray-100 cursor-pointer" id="nav-assets">
+                    <i class="fas fa-boxes w-5"></i>
+                    <span>Assets</span>
+                </a>
+                <a onclick="navigateTo('bookings')" class="nav-link flex items-center gap-x-3 px-4 py-3 text-sm font-medium rounded-2xl hover:bg-gray-100 cursor-pointer" id="nav-bookings">
+                    <i class="fas fa-calendar w-5"></i>
+                    <span>Bookings</span>
+                </a>
+                <a onclick="navigateTo('maintenance')" class="nav-link flex items-center gap-x-3 px-4 py-3 text-sm font-medium rounded-2xl hover:bg-gray-100 cursor-pointer" id="nav-maintenance">
+                    <i class="fas fa-tools w-5"></i>
+                    <span>Maintenance</span>
+                </a>
+                <a onclick="navigateTo('audits')" class="nav-link flex items-center gap-x-3 px-4 py-3 text-sm font-medium rounded-2xl hover:bg-gray-100 cursor-pointer" id="nav-audits">
+                    <i class="fas fa-clipboard-check w-5"></i>
+                    <span>Audits</span>
+                </a>
+                <a onclick="navigateTo('organization')" class="nav-link flex items-center gap-x-3 px-4 py-3 text-sm font-medium rounded-2xl hover:bg-gray-100 cursor-pointer hidden" id="nav-org">
+                    <i class="fas fa-building w-5"></i>
+                    <span>Organization</span>
+                </a>
+            </nav>
+
+            <div class="p-4 border-t">
+                <button onclick="logout()" 
+                        class="w-full flex items-center justify-center gap-x-2 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-2xl">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Top Nav -->
+            <header class="h-16 border-b bg-white px-8 flex items-center justify-between">
+                <div class="flex items-center gap-x-8">
+                    <div onclick="toggleSidebar()" class="lg:hidden cursor-pointer">
+                        <i class="fas fa-bars text-xl"></i>
+                    </div>
+                    <h1 id="page-title" class="text-2xl font-semibold">Dashboard</h1>
+                </div>
+                
+                <div class="flex items-center gap-x-6">
+                    <div class="relative">
+                        <input id="global-search" 
+                               onkeyup="if(event.key==='Enter') searchAssets()"
+                               type="text" 
+                               placeholder="Search assets..." 
+                               class="bg-gray-100 border-0 focus:ring-2 focus:ring-blue-500 w-80 pl-10 py-2.5 rounded-3xl text-sm">
+                        <i class="fas fa-search absolute left-4 top-3 text-gray-400"></i>
+                    </div>
+                    
+                    <button onclick="showNotifications()" class="relative p-2 hover:bg-gray-100 rounded-2xl">
+                        <i class="fas fa-bell text-xl text-gray-600"></i>
+                        <span id="notif-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-medium w-4 h-4 flex items-center justify-center rounded-full">3</span>
+                    </button>
+                    
+                    <div onclick="showProfileMenu()" class="flex items-center gap-x-2 cursor-pointer">
+                        <div id="header-avatar" class="w-8 h-8 bg-blue-100 text-blue-700 rounded-2xl flex items-center justify-center font-semibold text-sm">JD</div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div id="main-content" class="flex-1 overflow-auto p-8">
+                <!-- DASHBOARD -->
+                <div id="screen-dashboard" class="space-y-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                        <!-- KPI Cards -->
+                        <div onclick="navigateTo('assets')" class="bg-white rounded-3xl p-6 card-hover cursor-pointer border border-gray-100">
+                            <div class="flex justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-500">Available Assets</p>
+                                    <p id="kpi-available" class="text-4xl font-semibold mt-2">142</p>
+                                </div>
+                                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center">
+                                    <i class="fas fa-boxes text-2xl"></i>
+                                </div>
+                            </div>
+                            <div class="text-emerald-600 text-xs mt-4 flex items-center gap-x-1">
+                                <i class="fas fa-arrow-trend-up"></i>
+                                <span>12 this week</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-3xl p-6 card-hover cursor-pointer border border-gray-100">
+                            <div class="flex justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-500">Allocated</p>
+                                    <p id="kpi-allocated" class="text-4xl font-semibold mt-2">87</p>
+                                </div>
+                                <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center">
+                                    <i class="fas fa-user-check text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-3xl p-6 card-hover cursor-pointer border border-gray-100">
+                            <div class="flex justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-500">Maintenance Today</p>
+                                    <p id="kpi-maintenance" class="text-4xl font-semibold mt-2 text-orange-600">4</p>
+                                </div>
+                                <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center">
+                                    <i class="fas fa-tools text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-3xl p-6 card-hover cursor-pointer border border-gray-100">
+                            <div class="flex justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-500">Active Bookings</p>
+                                    <p id="kpi-bookings" class="text-4xl font-semibold mt-2">11</p>
+                                </div>
+                                <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center">
+                                    <i class="fas fa-calendar text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-3xl p-6 card-hover cursor-pointer border border-gray-100">
+                            <div class="flex justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-500">Overdue</p>
+                                    <p id="kpi-overdue" class="text-4xl font-semibold mt-2 text-red-600">6</p>
+                                </div>
+                                <div class="w-12 h-12 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center">
+                                    <i class="fas fa-exclamation-triangle text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="flex gap-4">
+                        <button onclick="showRegisterAssetModal()" 
+                                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-3xl py-5 flex items-center justify-center gap-x-3 font-medium">
+                            <i class="fas fa-plus"></i>
+                            <span>Register New Asset</span>
+                        </button>
+                        <button onclick="navigateTo('bookings')" 
+                                class="flex-1 bg-white border border-gray-300 hover:border-gray-400 rounded-3xl py-5 flex items-center justify-center gap-x-3 font-medium">
+                            <i class="fas fa-calendar-plus"></i>
+                            <span>Book Resource</span>
+                        </button>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="bg-white rounded-3xl p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="font-semibold">Recent Activity</h2>
+                            <button onclick="navigateTo('assets')" class="text-blue-600 text-sm font-medium flex items-center gap-x-1">
+                                View all <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                        <div id="recent-activity" class="space-y-4"></div>
+                    </div>
+                </div>
+
+                <!-- ASSETS SCREEN -->
+                <div id="screen-assets" class="hidden">
+                    <div class="flex justify-between items-end mb-8">
+                        <div>
+                            <h2 class="text-3xl font-semibold">Asset Directory</h2>
+                            <p class="text-gray-500">Track and manage all organizational assets</p>
+                        </div>
+                        <button onclick="showRegisterAssetModal()" 
+                                class="bg-blue-600 text-white px-6 py-3 rounded-2xl flex items-center gap-x-2">
+                            <i class="fas fa-plus"></i> New Asset
+                        </button>
+                    </div>
+                    
+                    <div class="bg-white rounded-3xl overflow-hidden">
+                        <div class="p-6 border-b flex gap-4">
+                            <select id="filter-category" onchange="filterAssets()" class="bg-gray-100 px-4 py-2.5 rounded-2xl text-sm focus:ring-blue-500">
+                                <option value="">All Categories</option>
+                            </select>
+                            <select id="filter-status" onchange="filterAssets()" class="bg-gray-100 px-4 py-2.5 rounded-2xl text-sm focus:ring-blue-500">
+                                <option value="">All Statuses</option>
+                            </select>
+                        </div>
+                        
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b text-left text-xs uppercase tracking-widest text-gray-500">
+                                    <th class="px-6 py-5">Asset Tag</th>
+                                    <th class="px-6 py-5">Name</th>
+                                    <th class="px-6 py-5">Category</th>
+                                    <th class="px-6 py-5">Status</th>
+                                    <th class="px-6 py-5">Holder</th>
+                                    <th class="px-6 py-5 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="assets-table-body" class="divide-y text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- BOOKINGS SCREEN -->
+                <div id="screen-bookings" class="hidden">
+                    <h2 class="text-3xl font-semibold mb-8">Resource Bookings</h2>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2 bg-white rounded-3xl p-8">
+                            <h3 class="font-medium mb-4">Upcoming Bookings</h3>
+                            <div id="bookings-list" class="space-y-4"></div>
+                        </div>
+                        <div class="bg-white rounded-3xl p-8">
+                            <h3 class="font-medium mb-6">Book New Resource</h3>
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-xs uppercase tracking-widest text-gray-500 mb-2">Resource</label>
+                                    <select id="booking-resource" class="w-full bg-gray-100 rounded-2xl p-4">
+                                        <option>Conference Room A</option>
+                                        <option>Projector Kit</option>
+                                        <option>Company Van #2</option>
+                                    </select>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs uppercase tracking-widest text-gray-500 mb-2">Date</label>
+                                        <input type="date" id="booking-date" class="w-full bg-gray-100 rounded-2xl p-4">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs uppercase tracking-widest text-gray-500 mb-2">Time</label>
+                                        <input type="time" id="booking-time" class="w-full bg-gray-100 rounded-2xl p-4">
+                                    </div>
+                                </div>
+                                <button onclick="createBooking()" 
+                                        class="w-full bg-blue-600 text-white py-4 rounded-3xl font-medium">Confirm Booking</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MAINTENANCE SCREEN -->
+                <div id="screen-maintenance" class="hidden">
+                    <div class="flex justify-between mb-8">
+                        <h2 class="text-3xl font-semibold">Maintenance Requests</h2>
+                        <button onclick="showRaiseMaintenanceModal()" class="bg-orange-600 text-white px-6 py-3 rounded-2xl flex items-center gap-x-2">
+                            <i class="fas fa-plus"></i> Raise Request
+                        </button>
+                    </div>
+                    <div id="maintenance-list" class="space-y-4"></div>
+                </div>
+
+                <!-- AUDITS SCREEN -->
+                <div id="screen-audits" class="hidden">
+                    <h2 class="text-3xl font-semibold mb-8">Asset Audits</h2>
+                    <button onclick="startNewAudit()" class="mb-8 bg-emerald-600 text-white px-8 py-4 rounded-3xl font-medium flex items-center gap-x-2">
+                        <i class="fas fa-clipboard-list"></i> Start New Audit Cycle
+                    </button>
+                    <div id="audit-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+                </div>
+
+                <!-- ORGANIZATION (Admin Only) -->
+                <div id="screen-organization" class="hidden">
+                    <h2 class="text-3xl font-semibold mb-8">Organization Setup</h2>
+                    <div class="grid grid-cols-3 gap-6">
+                        <div class="bg-white rounded-3xl p-8">
+                            <h3 class="font-semibold mb-6">Departments</h3>
+                            <div id="dept-list" class="space-y-3"></div>
+                            <button onclick="addDepartment()" class="mt-6 w-full text-blue-600 border border-blue-200 hover:bg-blue-50 py-3 rounded-2xl">+ Add Department</button>
+                        </div>
+                        <div class="bg-white rounded-3xl p-8">
+                            <h3 class="font-semibold mb-6">Asset Categories</h3>
+                            <div id="category-list" class="space-y-3"></div>
+                        </div>
+                        <div class="bg-white rounded-3xl p-8">
+                            <h3 class="font-semibold mb-6">Employee Directory</h3>
+                            <div id="employee-list" class="space-y-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Register Asset Modal -->
+    <div id="register-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+        <div class="bg-white rounded-3xl max-w-lg w-full mx-4">
+            <div class="p-8">
+                <h3 class="text-2xl font-semibold mb-8">Register New Asset</h3>
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm mb-2 font-medium">Asset Name</label>
+                        <input id="asset-name" type="text" class="w-full border border-gray-200 focus:border-blue-500 rounded-2xl px-5 py-4" placeholder="Dell XPS 15 Laptop">
+                    </div>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm mb-2 font-medium">Category</label>
+                            <select id="asset-category" class="w-full border border-gray-200 focus:border-blue-500 rounded-2xl px-5 py-4">
+                                <option>Electronics</option>
+                                <option>Furniture</option>
+                                <option>Vehicles</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm mb-2 font-medium">Serial Number</label>
+                            <input id="asset-serial" type="text" class="w-full border border-gray-200 focus:border-blue-500 rounded-2xl px-5 py-4" placeholder="SN-938472">
+                        </div>
+                    </div>
+                    <button onclick="registerAsset()" 
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-3xl text-lg font-medium">Register Asset</button>
+                </div>
+            </div>
+            <div class="border-t p-4 flex justify-end">
+                <button onclick="hideModals()" class="px-8 py-3 text-gray-500">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Raise Maintenance Modal -->
+    <div id="maintenance-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+        <div class="bg-white rounded-3xl max-w-md w-full mx-4">
+            <div class="p-8">
+                <h3 class="text-2xl font-semibold mb-6">Raise Maintenance Request</h3>
+                <textarea id="maintenance-desc" rows="4" class="w-full border border-gray-200 rounded-3xl p-5" placeholder="Describe the issue..."></textarea>
+                <button onclick="raiseMaintenance()" class="mt-6 w-full bg-orange-600 text-white py-4 rounded-3xl">Submit Request</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock Data Store
+        let currentUser = {
+            name: "Priya Sharma",
+            role: "Employee",
+            avatar: "PS"
+        };
+
+        let assets = [
+            {
+                id: 1,
+                tag: "AF-0042",
+                name: "Dell Latitude 7430",
+                category: "Electronics",
+                status: "Allocated",
+                holder: "Rahul Verma",
+                serial: "DL-9382"
+            },
+            {
+                id: 2,
+                tag: "AF-0089",
+                name: "Ergonomic Chair",
+                category: "Furniture",
+                status: "Available",
+                holder: null,
+                serial: "CH-221"
+            },
+            {
+                id: 3,
+                tag: "AF-0123",
+                name: "Projector Epson",
+                category: "Electronics",
+                status: "Under Maintenance",
+                holder: null,
+                serial: "EP-7781"
+            }
+        ];
+
+        let bookings = [
+            { id: 1, resource: "Conference Room B", time: "Today 2:00 PM - 3:30 PM", status: "Confirmed" },
+            { id: 2, resource: "Toyota Innova", time: "Tomorrow 10:00 AM", status: "Upcoming" }
+        ];
+
+        let maintenanceRequests = [
+            { id: 1, asset: "AF-0042", issue: "Screen flickering", status: "Pending Approval" }
+        ];
+
+        let audits = [
+            { id: 1, name: "Q2 Department Audit", status: "In Progress", auditors: 3 }
+        ];
+
+        // Render Functions
+        function renderDashboard() {
+            document.getElementById('kpi-available').textContent = '142';
+            document.getElementById('kpi-allocated').textContent = '87';
+            document.getElementById('kpi-maintenance').textContent = '4';
+            document.getElementById('kpi-bookings').textContent = '11';
+            document.getElementById('kpi-overdue').textContent = '6';
+            
+            const activityHTML = `
+                <div class="flex gap-4 items-start">
+                    <div class="w-8 h-8 bg-blue-100 rounded-2xl flex-shrink-0 flex items-center justify-center text-blue-600">📦</div>
+                    <div class="flex-1">
+                        <div><span class="font-medium">AF-0089</span> was returned by Rahul</div>
+                        <div class="text-xs text-gray-500 mt-0.5">2 hours ago</div>
+                    </div>
+                </div>
+                <div class="flex gap-4 items-start">
+                    <div class="w-8 h-8 bg-amber-100 rounded-2xl flex-shrink-0 flex items-center justify-center text-amber-600">🔧</div>
+                    <div class="flex-1">
+                        <div>Maintenance request approved for Dell Laptop</div>
+                        <div class="text-xs text-gray-500 mt-0.5">Yesterday</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('recent-activity').innerHTML = activityHTML;
+        }
+
+        function renderAssetsTable(filteredAssets = assets) {
+            const tbody = document.getElementById('assets-table-body');
+            tbody.innerHTML = '';
+            
+            filteredAssets.forEach(asset => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-6 py-5 font-mono text-sm">${asset.tag}</td>
+                    <td class="px-6 py-5">${asset.name}</td>
+                    <td class="px-6 py-5"><span class="px-3 py-1 bg-gray-100 text-xs rounded-3xl">${asset.category}</span></td>
+                    <td class="px-6 py-5">
+                        <span class="inline-flex items-center gap-x-1.5">
+                            <span class="status-dot ${asset.status === 'Available' ? 'bg-emerald-500' : asset.status === 'Allocated' ? 'bg-blue-500' : 'bg-orange-500'}"></span>
+                            ${asset.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-5">${asset.holder || '—'}</td>
+                    <td class="px-6 py-5 text-right">
+                        <button onclick="allocateAsset(${asset.id})" class="text-blue-600 hover:text-blue-700 text-sm font-medium">Allocate</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderBookings() {
+            const container = document.getElementById('bookings-list');
+            container.innerHTML = bookings.map(b => `
+                <div class="flex justify-between items-center bg-gray-50 rounded-2xl p-5">
+                    <div>
+                        <div class="font-medium">${b.resource}</div>
+                        <div class="text-sm text-gray-500">${b.time}</div>
+                    </div>
+                    <div class="text-right">
+                        <span class="px-4 py-1 text-xs font-medium bg-emerald-100 text-emerald-700 rounded-3xl">${b.status}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderMaintenance() {
+            const container = document.getElementById('maintenance-list');
+            container.innerHTML = maintenanceRequests.map(m => `
+                <div class="bg-white border border-gray-100 rounded-3xl p-6 flex gap-6 items-center">
+                    <div class="flex-1">
+                        <div class="font-medium">${m.asset} - ${m.issue}</div>
+                        <div class="text-xs text-gray-500">Raised by Priya Sharma</div>
+                    </div>
+                    <div>
+                        <span class="px-5 py-2 text-xs font-medium bg-amber-100 text-amber-700 rounded-3xl">${m.status}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderAudits() {
+            const container = document.getElementById('audit-list');
+            container.innerHTML = audits.map(a => `
+                <div class="bg-white rounded-3xl p-8">
+                    <div class="flex justify-between">
+                        <div>
+                            <div class="font-semibold">${a.name}</div>
+                            <div class="text-sm text-gray-500">${a.auditors} auditors assigned</div>
+                        </div>
+                        <span class="px-5 py-1.5 text-xs bg-teal-100 text-teal-700 rounded-3xl">${a.status}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Navigation
+        function navigateTo(screen) {
+            document.querySelectorAll('#main-content > div').forEach(div => {
+                div.classList.add('hidden');
+            });
+            document.getElementById(`screen-${screen}`).classList.remove('hidden');
+            
+            // Update active nav
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('bg-blue-50', 'text-blue-600'));
+            const activeNav = document.getElementById(`nav-${screen}`);
+            if (activeNav) activeNav.classList.add('bg-blue-50', 'text-blue-600');
+            
+            document.getElementById('page-title').textContent = screen.charAt(0).toUpperCase() + screen.slice(1);
+            
+            // Render content
+            if (screen === 'dashboard') renderDashboard();
+            else if (screen === 'assets') renderAssetsTable();
+            else if (screen === 'bookings') renderBookings();
+            else if (screen === 'maintenance') renderMaintenance();
+            else if (screen === 'audits') renderAudits();
+        }
+
+        function filterAssets() {
+            const category = document.getElementById('filter-category').value;
+            const status = document.getElementById('filter-status').value;
+            
+            let filtered = assets;
+            if (category) filtered = filtered.filter(a => a.category === category);
+            if (status) filtered = filtered.filter(a => a.status === status);
+            
+            renderAssetsTable(filtered);
+        }
+
+        // Modals
+        function showRegisterAssetModal() {
+            document.getElementById('register-modal').classList.remove('hidden');
+        }
+        
+        function hideModals() {
+            document.getElementById('register-modal').classList.add('hidden');
+            document.getElementById('maintenance-modal').classList.add('hidden');
+        }
+
+        function registerAsset() {
+            const name = document.getElementById('asset-name').value || "New MacBook Pro";
+            const category = document.getElementById('asset-category').value;
+            
+            const newAsset = {
+                id: Date.now(),
+                tag: `AF-${String(assets.length + 1000).slice(1)}`,
+                name: name,
+                category: category || "Electronics",
+                status: "Available",
+                holder: null,
+                serial: "NEW-" + Math.floor(Math.random()*9000)
+            };
+            
+            assets.unshift(newAsset);
+            hideModals();
+            alert("✅ Asset registered successfully!");
+            navigateTo('assets');
+        }
+
+        function allocateAsset(id) {
+            const asset = assets.find(a => a.id === id);
+            if (asset) {
+                if (asset.status === "Available") {
+                    asset.status = "Allocated";
+                    asset.holder = currentUser.name;
+                    alert(`✅ ${asset.name} allocated to you`);
+                    renderAssetsTable();
+                } else {
+                    alert("Asset is already allocated. Transfer request needed.");
+                }
+            }
+        }
+
+        function showRaiseMaintenanceModal() {
+            document.getElementById('maintenance-modal').classList.remove('hidden');
+        }
+
+        function raiseMaintenance() {
+            const desc = document.getElementById('maintenance-desc').value || "Hardware issue";
+            maintenanceRequests.unshift({
+                id: Date.now(),
+                asset: "AF-0042",
+                issue: desc,
+                status: "Pending Approval"
+            });
+            hideModals();
+            alert("Maintenance request raised!");
+            navigateTo('maintenance');
+        }
+
+        function createBooking() {
+            alert("✅ Booking confirmed for Conference Room A");
+            bookings.unshift({
+                id: Date.now(),
+                resource: document.getElementById('booking-resource').value,
+                time: "Today 4:00 PM",
+                status: "Confirmed"
+            });
+            renderBookings();
+        }
+
+        function startNewAudit() {
+            audits.unshift({
+                id: Date.now(),
+                name: "New Audit Cycle " + new Date().getFullYear(),
+                status: "In Progress",
+                auditors: 2
+            });
+            renderAudits();
+            alert("Audit cycle started. Auditors assigned.");
+        }
+
+        function addDepartment() {
+            alert("Department added (demo)");
+        }
+
+        function showNotifications() {
+            alert("🛎️ 3 new notifications:\n• Maintenance request approved\n• Asset AF-0123 returned\n• Booking reminder");
+        }
+
+        function showProfileMenu() {
+            const role = prompt("Change role for demo? (Admin / Asset Manager / Employee)", currentUser.role);
+            if (role) {
+                currentUser.role = role;
+                document.getElementById('user-role').textContent = role;
+                if (role === "Admin") {
+                    document.getElementById('nav-org').classList.remove('hidden');
+                }
+            }
+        }
+
+        function logout() {
+            if (confirm("Logout?")) {
+                window.location.reload();
+            }
+        }
+
+        function toggleSidebar() {
+            // Mobile simulation only
+            alert("Sidebar toggled (mobile view simulation)");
+        }
+
+        function searchAssets() {
+            const term = document.getElementById('global-search').value.toLowerCase();
+            const filtered = assets.filter(a => 
+                a.name.toLowerCase().includes(term) || 
+                a.tag.toLowerCase().includes(term)
+            );
+            renderAssetsTable(filtered);
+            navigateTo('assets');
+        }
+
+        // Initialize App
+        function initApp() {
+            // Tailwind script already loaded
+            document.getElementById('user-name').textContent = currentUser.name;
+            document.getElementById('user-role').textContent = currentUser.role;
+            document.getElementById('header-avatar').textContent = currentUser.avatar;
+            
+            // Populate filters
+            const categories = [...new Set(assets.map(a => a.category))];
+            const catSelect = document.getElementById('filter-category');
+            categories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                catSelect.appendChild(opt);
+            });
+            
+            renderDashboard();
+            navigateTo('dashboard');
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.metaKey && e.key === "k") {
+                    e.preventDefault();
+                    document.getElementById('global-search').focus();
+                }
+            });
+            
+            console.log('%cAssetFlow POC ready! 🚀', 'color:#3b82f6; font-size:13px; font-family:monospace');
+        }
+
+        // Boot app
+        window.onload = initApp;
+    </script>
+</body>
+</html>
