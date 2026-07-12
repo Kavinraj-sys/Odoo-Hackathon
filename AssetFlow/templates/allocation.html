@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Asset Allocation & Transfer</h1>
+<p>Double allocation is prevented in backend logic.</p>
+<table>
+    <thead><tr><th>Asset</th><th>Current Holder</th><th>Expected Return</th><th>Action</th></tr></thead>
+    <tbody>
+        {% for asset in assets %}
+        <tr>
+            <td>{{ asset.name }} ({{ asset.tag }})<br><small>Status: {{ asset.status }}</small></td>
+            <td>{{ asset.allocated_to or 'Available' }}</td>
+            <td>
+                <form method="POST" action="{{ url_for('allocation') }}">
+                    <input type="hidden" name="asset_id" value="{{ asset.id }}">
+                    <input type="hidden" name="target_employee" value="{{ current_user.name }}">
+                    <input type="datetime-local" name="expected_return">
+            </td>
+            <td>
+                    <button type="submit" class="btn-primary">Allocate / Transfer Request</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

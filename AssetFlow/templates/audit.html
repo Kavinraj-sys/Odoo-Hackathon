@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Asset Audit</h1>
+
+<div class="card">
+    <h3>Q3 Audit - Engineering Department</h3>
+    <p>Auditors: Priya Shah, Rahul Verma</p>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Asset Tag</th>
+            <th>Name</th>
+            <th>Expected Location</th>
+            <th>Verification</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for asset in assets if assets %}
+        <tr>
+            <td>{{ asset.tag }}</td>
+            <td>{{ asset.name }}</td>
+            <td>{{ asset.location }}</td>
+            <td>
+                <select>
+                    <option value="Verified">Verified</option>
+                    <option value="Missing">Missing</option>
+                    <option value="Damaged">Damaged</option>
+                </select>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<button class="btn-primary" style="margin-top:20px;">Close Audit Cycle & Generate Report</button>
+{% endblock %}

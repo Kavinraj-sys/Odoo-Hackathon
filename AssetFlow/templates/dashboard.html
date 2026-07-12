@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Dashboard - {{ user_role }}</h1>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3>Assets Available</h3>
+        <h2>{{ stats.available }}</h2>
+    </div>
+    <div class="stat-card">
+        <h3>Assets Allocated</h3>
+        <h2>{{ stats.allocated }}</h2>
+    </div>
+    <div class="stat-card">
+        <h3>Maintenance Today</h3>
+        <h2>{{ stats.maintenance_today }}</h2>
+    </div>
+    <div class="stat-card">
+        <h3>Active Bookings</h3>
+        <h2>{{ stats.active_bookings }}</h2>
+    </div>
+    <div class="stat-card">
+        <h3>Pending Transfers</h3>
+        <h2>{{ stats.pending_transfers }}</h2>
+    </div>
+    <div class="stat-card">
+        <h3>Upcoming Returns</h3>
+        <h2>{{ stats.upcoming_returns }}</h2>
+    </div>
+    <div class="stat-card">
+        <h3 style="color:#f87171;">Overdue Returns</h3>
+        <h2 style="color:#f87171;">{{ stats.overdue_returns }}</h2>
+    </div>
+</div>
+
+<h2>Recent Activity</h2>
+<table>
+    <thead>
+        <tr><th>Asset</th><th>Status</th><th>Location</th><th>Expected Return</th></tr>
+    </thead>
+    <tbody>
+        {% for asset in recent_assets %}
+        <tr>
+            <td>{{ asset.name }} ({{ asset.tag }})</td>
+            <td><span class="status {{ asset.status.lower().replace(' ', '-') }}">{{ asset.status }}</span></td>
+            <td>{{ asset.location or 'N/A' }}</td>
+            <td>
+                {% if asset.expected_return %}
+                    {{ asset.expected_return }}
+                {% else %}N/A{% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<canvas id="utilChart" style="max-height: 320px; margin-top: 30px;"></canvas>
+{% endblock %}

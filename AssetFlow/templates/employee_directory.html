@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Employee Directory</h1>
+
+<p class="muted" style="margin-top:-10px;">Promote employees to Department Head or Asset Manager. (Admin only)</p>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<table class="asset-table" style="margin-top: 18px;">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Current Role</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for emp in employees %}
+            <tr>
+                <td>{{ emp.name }}</td>
+                <td>{{ emp.email }}</td>
+                <td>{{ emp.role }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('promote_department_head') }}" style="display:inline;">
+                        <input type="hidden" name="user_id" value="{{ emp.id }}">
+                        <button type="submit" class="btn">Promote to Department Head</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('promote_asset_manager') }}" style="display:inline; margin-left: 8px;">
+                        <input type="hidden" name="user_id" value="{{ emp.id }}">
+                        <button type="submit" class="btn">Promote to Asset Manager</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+

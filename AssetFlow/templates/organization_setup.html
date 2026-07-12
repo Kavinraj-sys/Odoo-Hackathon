@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Organization Setup</h1>
+<p class="muted">Maintain the master data that other workflows depend on.</p>
+
+<div class="card" style="margin-bottom: 20px;">
+    <h3>Tabs</h3>
+    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <a href="#departments" class="btn">Departments</a>
+        <a href="#categories" class="btn">Asset Categories</a>
+        <a href="#employees" class="btn">Employees</a>
+    </div>
+</div>
+
+<div class="card" id="departments" style="margin-bottom: 20px;">
+    <h3>Department Management</h3>
+    <form method="POST" action="{{ url_for('organization_setup') }}">
+        <input type="hidden" name="action" value="create_department">
+        <input type="text" name="name" placeholder="Department Name" required>
+        <input type="text" name="head" placeholder="Department Head">
+        <input type="text" name="parent_department" placeholder="Parent Department">
+        <input type="text" name="description" placeholder="Description">
+        <select name="status">
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+        </select>
+        <button type="submit">Add Department</button>
+    </form>
+
+    <table style="margin-top: 12px;">
+        <thead>
+            <tr><th>Name</th><th>Head</th><th>Parent</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            {% for department in departments %}
+            <tr>
+                <td>
+                    <form method="POST" action="{{ url_for('organization_setup') }}" style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <input type="hidden" name="action" value="update_department">
+                        <input type="hidden" name="department_id" value="{{ department.id }}">
+                        <input type="text" name="name" value="{{ department.name }}" required>
+                        <input type="text" name="head" value="{{ department.head or '' }}">
+                        <input type="text" name="parent_department" value="{{ department.parent_department or '' }}">
+                        <input type="text" name="description" value="{{ department.description or '' }}">
+                        <select name="status">
+                            <option value="Active" {% if department.status == 'Active' %}selected{% endif %}>Active</option>
+                            <option value="Inactive" {% if department.status == 'Inactive' %}selected{% endif %}>Inactive</option>
+                        </select>
+                        <button type="submit">Save</button>
+                    </form>
+                </td>
+                <td>{{ department.head or '—' }}</td>
+                <td>{{ department.parent_department or '—' }}</td>
+                <td>{{ department.status }}</td>
+                <td></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card" id="categories" style="margin-bottom: 20px;">
+    <h3>Asset Category Management</h3>
+    <form method="POST" action="{{ url_for('organization_setup') }}">
+        <input type="hidden" name="action" value="create_category">
+        <input type="text" name="name" placeholder="Category Name" required>
+        <input type="text" name="description" placeholder="Description">
+        <input type="text" name="warranty_period" placeholder="Warranty Period">
+        <button type="submit">Add Category</button>
+    </form>
+
+    <table style="margin-top: 12px;">
+        <thead>
+            <tr><th>Name</th><th>Description</th><th>Warranty</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            {% for category in categories %}
+            <tr>
+                <td>
+                    <form method="POST" action="{{ url_for('organization_setup') }}" style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <input type="hidden" name="action" value="update_category">
+                        <input type="hidden" name="category_id" value="{{ category.id }}">
+                        <input type="text" name="name" value="{{ category.name }}" required>
+                        <input type="text" name="description" value="{{ category.description or '' }}">
+                        <input type="text" name="warranty_period" value="{{ category.warranty_period or '' }}">
+                        <button type="submit">Save</button>
+                    </form>
+                </td>
+                <td>{{ category.description or '—' }}</td>
+                <td>{{ category.warranty_period or '—' }}</td>
+                <td></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card" id="employees">
+    <h3>Employee Directory</h3>
+    <table class="asset-table" style="margin-top: 18px;">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Department</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for emp in employees %}
+                <tr>
+                    <td>{{ emp.name }}</td>
+                    <td>{{ emp.email }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('organization_setup') }}" style="display:flex; gap:6px; flex-wrap:wrap;">
+                            <input type="hidden" name="action" value="update_employee">
+                            <input type="hidden" name="user_id" value="{{ emp.id }}">
+                            <input type="text" name="department" value="{{ emp.department or '' }}" placeholder="Department">
+                            <select name="status">
+                                <option value="Active" {% if emp.status == 'Active' %}selected{% endif %}>Active</option>
+                                <option value="Inactive" {% if emp.status == 'Inactive' %}selected{% endif %}>Inactive</option>
+                            </select>
+                            <button type="submit">Save</button>
+                        </form>
+                    </td>
+                    <td>{{ emp.role }}</td>
+                    <td>{{ emp.status or 'Active' }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('promote_department_head') }}" style="display:inline;">
+                            <input type="hidden" name="user_id" value="{{ emp.id }}">
+                            <button type="submit" class="btn">Dept Head</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('promote_asset_manager') }}" style="display:inline; margin-left: 6px;">
+                            <input type="hidden" name="user_id" value="{{ emp.id }}">
+                            <button type="submit" class="btn">Asset Manager</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

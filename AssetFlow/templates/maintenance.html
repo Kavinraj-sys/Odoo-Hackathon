@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Maintenance Management</h1>
+
+<!-- Raise Request -->
+<div class="card">
+    <h3>Raise Maintenance Request</h3>
+    <form method="POST" action="{{ url_for('maintenance') }}">
+        <select name="asset_tag" required>
+            <option value="">Select Asset</option>
+            {% for a in assets %}
+                <option value="{{ a.tag }}">{{ a.tag }} - {{ a.name }}</option>
+            {% endfor %}
+        </select>
+        <textarea name="issue" placeholder="Describe the issue..." rows="3" required></textarea>
+        <select name="priority">
+            <option value="Low">Low</option>
+            <option value="Medium" selected>Medium</option>
+            <option value="High">High</option>
+        </select>
+        <button type="submit">Submit Request</button>
+    </form>
+</div>
+
+<h2>Maintenance Requests</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Asset</th>
+            <th>Issue</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in maintenance_requests %}
+        <tr>
+            <td>{{ r.asset_tag }}</td>
+            <td>{{ r.issue }}</td>
+            <td>{{ r.priority }}</td>
+            <td><span class="status">{{ r.status }}</span></td>
+            <td>
+                {% if user_role in ['Admin','AssetManager'] and r.status == 'Pending' %}
+                    <form method="POST" action="{{ url_for('maintenance_action', req_id=r.id, action='approve') }}" style="display:inline;">
+                        <button type="submit" class="btn-approve">Approve</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('maintenance_action', req_id=r.id, action='reject') }}" style="display:inline; margin-left:8px;">
+                        <button type="submit" class="btn-reject">Reject</button>
+                    </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

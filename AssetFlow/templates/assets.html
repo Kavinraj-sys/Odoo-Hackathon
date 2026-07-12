@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Assets</h1>
+
+{% if user_role in ['Admin', 'AssetManager'] %}
+<form method="POST" action="{{ url_for('create_asset') }}" class="form-inline" style="display:flex; flex-wrap:wrap; gap:8px; align-items:flex-end; margin-bottom: 16px;">
+    <input type="text" name="tag" placeholder="Asset Tag">
+    <input type="text" name="name" placeholder="Asset Name" required>
+    <select name="category">
+        <option value="">Select Category</option>
+        {% for category in categories %}
+        <option value="{{ category.name }}">{{ category.name }}</option>
+        {% endfor %}
+    </select>
+    <input type="text" name="serial" placeholder="Serial Number">
+    <input type="date" name="acquisition_date">
+    <input type="text" name="acquisition_cost" placeholder="Acquisition Cost">
+    <input type="text" name="condition" placeholder="Condition" value="Good">
+    <input type="text" name="location" placeholder="Location">
+    <label><input type="checkbox" name="is_shared"> Shared</label>
+    <textarea name="description" placeholder="Notes"></textarea>
+    <button type="submit">+ Register Asset</button>
+</form>
+{% endif %}
+
+<table class="asset-table">
+    <thead>
+        <tr>
+            <th>Tag</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Serial</th>
+            <th>Location</th>
+            <th>Condition</th>
+            {% if user_role in ['Admin', 'AssetManager'] %}<th>Actions</th>{% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for asset in assets %}
+        <tr>
+            <td>{{ asset.tag }}</td>
+            <td>{{ asset.name }}</td>
+            <td>{{ asset.category }}</td>
+            <td><span class="status {{ asset.status.lower().replace(' ', '-') }}">{{ asset.status }}</span></td>
+            <td>{{ asset.serial or 'N/A' }}</td>
+            <td>{{ asset.location or 'N/A' }}</td>
+            <td>{{ asset.condition or 'Good' }}</td>
+            {% if user_role in ['Admin', 'AssetManager'] %}
+            <td>
+                <form method="POST" action="{{ url_for('update_asset', id=asset.id) }}" style="display:inline;">
+                    <input type="text" name="tag" value="{{ asset.tag }}" style="width:90px;">
+                    <input type="text" name="name" value="{{ asset.name }}" style="width:110px;">
+                    <input type="text" name="location" value="{{ asset.location or '' }}" style="width:90px;">
+                    <select name="status">
+                        <option value="Available" {% if asset.status == 'Available' %}selected{% endif %}>Available</option>
+                        <option value="Allocated" {% if asset.status == 'Allocated' %}selected{% endif %}>Allocated</option>
+                        <option value="Under Maintenance" {% if asset.status == 'Under Maintenance' %}selected{% endif %}>Under Maintenance</option>
+                    </select>
+                    <button type="submit">Update</button>
+                </form>
+                {% if user_role == 'Admin' %}
+                <form method="POST" action="{{ url_for('delete_asset', id=asset.id) }}" style="display:inline;" onsubmit="return confirm('Delete?');">
+                    <button type="submit" class="delete-btn">Delete</button>
+                </form>
+                {% endif %}
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
